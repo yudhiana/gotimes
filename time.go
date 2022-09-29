@@ -54,7 +54,6 @@ func (gt *gotimes) AddWeekDay(sla int) (t time.Time) {
 				}
 			}
 			gt.nexttime = gt.addDate(0, 0, i)
-
 		}
 	}
 	return gt.nexttime
