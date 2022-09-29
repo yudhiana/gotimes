@@ -6,7 +6,7 @@ import (
 
 type gotimes struct {
 	today    time.Time
-	holiday  []time.Time
+	holidays  []time.Time
 	weekend  map[int]bool
 	nexttime time.Time
 }
@@ -38,7 +38,7 @@ func (gt *gotimes) SetToday(today *time.Time) *gotimes {
 }
 
 func (gt *gotimes) SetHolidays(h []time.Time) *gotimes {
-	gt.holiday = append(gt.holiday, h...)
+	gt.holidays = append(gt.holidays, h...)
 	return gt
 }
 
@@ -48,7 +48,7 @@ func (gt *gotimes) AddWeekDay(sla int) (t time.Time) {
 		if gt.isWeekend(gt.nexttime) {
 			sla++
 		} else {
-			if len(gt.holiday) > 0 {
+			if len(gt.holidays) > 0 {
 				if gt.isOffDay(gt.nexttime) {
 					sla++
 				}
@@ -61,7 +61,7 @@ func (gt *gotimes) AddWeekDay(sla int) (t time.Time) {
 }
 
 func (gt *gotimes) isOffDay(d time.Time) (h bool) {
-	for _, dayOff := range gt.holiday {
+	for _, dayOff := range gt.holidays {
 		if dayOff.Equal(d) {
 			return true
 		}
