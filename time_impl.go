@@ -2,7 +2,7 @@ package gotimes
 
 import "time"
 
-type GoTimesImpl interface {
+type goTimesImpl interface {
 	SetToday(today time.Time) *gotimes
 	SetHolidays(h []time.Time) *gotimes
 	AddWeekDay(sla int) (t time.Time)

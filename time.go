@@ -9,9 +9,9 @@ type gotimes struct {
 	holiday []time.Time
 }
 
-type GoTime struct {
-	*gotimes
+type GoTimes struct {
 	Time time.Time
+	*gotimes
 }
 
 var weekend = map[int]bool{
@@ -19,7 +19,7 @@ var weekend = map[int]bool{
 	int(time.Sunday):   true,
 }
 
-func newTime() GoTimesImpl {
+func newTime() goTimesImpl {
 	return &gotimes{
 		today: time.Now(),
 	}
