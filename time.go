@@ -1,15 +1,17 @@
 package gotimes
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
-type Gotimes struct {
-	Today   time.Time
-	Holiday []time.Time
-	Error   error
+type gotimes struct {
+	today   time.Time
+	holiday []time.Time
+}
+
+type GoTime struct {
+	*gotimes
+	Time time.Time
 }
 
 var weekend = map[int]bool{
@@ -17,33 +19,43 @@ var weekend = map[int]bool{
 	int(time.Sunday):   true,
 }
 
-func newTime() gotimesImpl {
-	return &Gotimes{
-		Today: time.Now(),
+func newTime() GoTimesImpl {
+	return &gotimes{
+		today: time.Now(),
 	}
 }
 
-func (gt *Gotimes) IsWeekend() (w bool) {
-	return weekend[int(gt.Today.Weekday())]
+func (gt *gotimes) isWeekend(d time.Time) (w bool) {
+	return weekend[int(d.Weekday())]
 }
 
-func (gt *Gotimes) SetToday(today time.Time) *Gotimes {
-	gt.Today = today
+func (gt *gotimes) SetToday(today time.Time) *gotimes {
+	gt.today = today
 	return gt
 }
 
-func (gt *Gotimes) SetHolidays(h []time.Time) *Gotimes {
-	gt.Holiday = append(gt.Holiday, h...)
+func (gt *gotimes) SetHolidays(h []time.Time) *gotimes {
+	gt.holiday = append(gt.holiday, h...)
 	return gt
 }
 
-func (gt *Gotimes) Println() {
-	gbyte, _ := json.Marshal(*gt)
-	fmt.Println(string(gbyte))
+func (gt *gotimes) AddWeekDay(sla int) (t time.Time) {
+	for i := 1; i <= sla; i++ {
+		nextDay := gt.today.AddDate(0, 0, i)
+		if gt.isWeekend(nextDay) {
+			sla++
+		} else {
+			if gt.isOffDay(nextDay) {
+				sla++
+			}
+			t = gt.today.AddDate(0, 0, i)
+		}
+	}
+	return
 }
 
-func (gt *Gotimes) IsOffDay(d time.Time) (h bool) {
-	for _, dayOff := range gt.Holiday {
+func (gt *gotimes) isOffDay(d time.Time) (h bool) {
+	for _, dayOff := range gt.holiday {
 		if dayOff.Equal(d) {
 			return true
 		}
@@ -51,29 +63,6 @@ func (gt *Gotimes) IsOffDay(d time.Time) (h bool) {
 	return
 }
 
-func (gt *Gotimes) AddDate(years, month, days int) time.Time {
-	return gt.Today.AddDate(years, month, days)
-}
-
-func (gt *Gotimes) Add(d time.Duration) time.Time {
-	return gt.Today.Add(d)
-}
-
-func (gt *Gotimes) AddWeekDay(sla int) (t time.Time) {
-	for i := 1; i <= sla; i++ {
-		nextDay := gt.Today.AddDate(0, 0, i)
-		if weekend[int(nextDay.Weekday())] {
-			sla++
-		} else {
-			if gt.IsOffDay(nextDay) {
-				sla++
-			}
-			t = gt.Today.AddDate(0, 0, i)
-		}
-	}
-	return
-}
-
-func AddWeekDay(d int) (t time.Time) {
-	return newTime().AddWeekDay(d)
+func AddWeekDay(day int, holidays []time.Time) time.Time {
+	return newTime().SetToday(time.Now()).SetHolidays(holidays).AddWeekDay(day)
 }
