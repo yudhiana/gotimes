@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestToday(t *testing.T) {
+func TestGotimes(t *testing.T) {
 	t.Run("testAddWeekDay", func(t *testing.T) {
 		expected := "2022-10-10"
 		actual := gotimes.AddWeekDay(7).Format("2006-01-02")

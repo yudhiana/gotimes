@@ -68,7 +68,7 @@ func (gt *Gotimes) AddWeekDay(sla int) (t time.Time) {
 			if gt.IsOffDay(nextDay) {
 				sla++
 			}
-			t = nextDay.AddDate(0, 0, i)
+			t = gt.Today.AddDate(0, 0, i)
 		}
 	}
 	return
