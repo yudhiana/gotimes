@@ -5,8 +5,10 @@ import (
 )
 
 type gotimes struct {
-	today   time.Time
-	holiday []time.Time
+	today    time.Time
+	holiday  []time.Time
+	weekend  map[int]bool
+	nexttime time.Time
 }
 
 type GoTimes struct {
@@ -14,23 +16,24 @@ type GoTimes struct {
 	*gotimes
 }
 
-var weekend = map[int]bool{
-	int(time.Saturday): true,
-	int(time.Sunday):   true,
-}
-
 func newTime() goTimesImpl {
 	return &gotimes{
 		today: time.Now(),
+		weekend: map[int]bool{
+			int(time.Saturday): true,
+			int(time.Sunday):   true,
+		},
 	}
 }
 
 func (gt *gotimes) isWeekend(d time.Time) (w bool) {
-	return weekend[int(d.Weekday())]
+	return gt.weekend[int(d.Weekday())]
 }
 
-func (gt *gotimes) SetToday(today time.Time) *gotimes {
-	gt.today = today
+func (gt *gotimes) SetToday(today *time.Time) *gotimes {
+	if today != nil {
+		gt.today = *today
+	}
 	return gt
 }
 
@@ -41,17 +44,20 @@ func (gt *gotimes) SetHolidays(h []time.Time) *gotimes {
 
 func (gt *gotimes) AddWeekDay(sla int) (t time.Time) {
 	for i := 1; i <= sla; i++ {
-		nextDay := gt.today.AddDate(0, 0, i)
-		if gt.isWeekend(nextDay) {
+		gt.nexttime = gt.addDate(0, 0, i)
+		if gt.isWeekend(gt.nexttime) {
 			sla++
 		} else {
-			if gt.isOffDay(nextDay) {
-				sla++
+			if len(gt.holiday) > 0 {
+				if gt.isOffDay(gt.nexttime) {
+					sla++
+				}
 			}
-			t = gt.today.AddDate(0, 0, i)
+			gt.nexttime = gt.addDate(0, 0, i)
+
 		}
 	}
-	return
+	return gt.nexttime
 }
 
 func (gt *gotimes) isOffDay(d time.Time) (h bool) {
@@ -63,6 +69,10 @@ func (gt *gotimes) isOffDay(d time.Time) (h bool) {
 	return
 }
 
-func AddWeekDay(day int, holidays []time.Time) time.Time {
-	return newTime().SetToday(time.Now()).SetHolidays(holidays).AddWeekDay(day)
+func (gt gotimes) addDate(year, month, day int) (t time.Time) {
+	return gt.today.AddDate(year, month, day)
+}
+
+func AddWeekDay(day int, today *time.Time, holidays []time.Time) time.Time {
+	return newTime().SetToday(today).SetHolidays(holidays).AddWeekDay(day)
 }
